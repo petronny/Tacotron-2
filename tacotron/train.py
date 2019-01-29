@@ -13,8 +13,8 @@ from hparams import hparams_debug_string
 from tacotron.feeder import Feeder
 from tacotron.models import create_model
 from tacotron.utils import ValueWindow, plot
-from tacotron.utils.text import sequence_to_text
-from tacotron.utils.symbols import symbols
+from tacotron.utils_Chinese.text import sequence_to_text
+from tacotron.utils_Chinese.symbols import symbols
 from tqdm import tqdm
 
 log = infolog.log

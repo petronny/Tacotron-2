@@ -1,0 +1,3 @@
+[submodule "tacotron/utils_Chinese/split_pinyin_sp"]
+	path = tacotron/utils_Chinese/split_pinyin_sp
+	url = https://github.com/petronny/split_pinyin_sp

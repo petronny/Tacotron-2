@@ -9,6 +9,7 @@ from hparams import hparams, hparams_debug_string
 from infolog import log
 from tacotron.synthesizer import Synthesizer
 from tqdm import tqdm
+from tacotron.utils_Chinese.text import rawtext_to_text
 
 
 def generate_fast(model, text):
@@ -58,7 +59,9 @@ def run_eval(args, checkpoint_path, output_dir, hparams, sentences):
 
 	#Set inputs batch wise
 	sentences = [sentences[i: i+hparams.tacotron_synthesis_batch_size] for i in range(0, len(sentences), hparams.tacotron_synthesis_batch_size)]
-
+	#print(sentences)
+	sentences = [[rawtext_to_text(sen) for sen in sentence] for sentence in sentences]
+	print(sentences)
 	log('Starting Synthesis')
 	with open(os.path.join(eval_dir, 'map.txt'), 'w') as file:
 		for i, texts in enumerate(tqdm(sentences)):
@@ -90,7 +93,7 @@ def run_synthesis(args, checkpoint_path, output_dir, hparams):
 	synth = Synthesizer()
 	synth.load(checkpoint_path, hparams, gta=GTA)
 	with open(metadata_filename, encoding='utf-8') as f:
-		metadata = [line.strip().split('|') for line in f]
+		metadata = [line.strip().split('%') for line in f]
 		frame_shift_ms = hparams.hop_size / hparams.sample_rate
 		hours = sum([int(x[4]) for x in metadata]) * frame_shift_ms / (3600)
 		log('Loaded metadata for {} examples ({:.2f} hours)'.format(len(metadata), hours))

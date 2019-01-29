@@ -61,7 +61,7 @@ hparams = tf.contrib.training.HParams(
 	#		it will also give you an idea about trimming. If silences persist, try reducing trim_top_db slowly. If samples are trimmed mid words, try increasing it.
 	#	6- If audio quality is too metallic or fragmented (or if linear spectrogram plots are showing black silent regions on top), then restart from step 2.
 	num_mels = 80, #Number of mel-spectrogram channels and local conditioning dimensionality
-	num_freq = 1025, # (= n_fft / 2 + 1) only used when adding linear spectrograms post processing network
+	num_freq = 513, # (= n_fft / 2 + 1) only used when adding linear spectrograms post processing network
 	rescale = True, #Whether to rescale audio prior to preprocessing
 	rescaling_max = 0.999, #Rescaling value
 	trim_silence = True, #Whether to clip silence in Audio (at beginning and end of audio only, not the middle)
@@ -76,10 +76,10 @@ hparams = tf.contrib.training.HParams(
 	silence_threshold=2, #silence threshold used for sound trimming for wavenet preprocessing
 
 	#Mel spectrogram
-	n_fft = 2048, #Extra window size is filled with 0 paddings to match this parameter
-	hop_size = 275, #For 22050Hz, 275 ~= 12.5 ms (0.0125 * sample_rate)
-	win_size = 1100, #For 22050Hz, 1100 ~= 50 ms (If None, win_size = n_fft) (0.05 * sample_rate)
-	sample_rate = 22050, #22050 Hz (corresponding to ljspeech dataset) (sox --i <filename>)
+	n_fft = 1024, #Extra window size is filled with 0 paddings to match this parameter
+	hop_size = 200, #For 22050Hz, 275 ~= 12.5 ms (0.0125 * sample_rate)
+	win_size = 800, #For 22050Hz, 1100 ~= 50 ms (If None, win_size = n_fft) (0.05 * sample_rate)
+	sample_rate = 16000, #22050 Hz (corresponding to ljspeech dataset) (sox --i <filename>)
 	frame_shift_ms = None, #Can replace hop_size parameter. (Recommended: 12.5)
 
 	#M-AILABS (and other datasets) trim params (there parameters are usually correct for any data, but definitely must be tuned for specific speakers)
@@ -104,7 +104,7 @@ hparams = tf.contrib.training.HParams(
 	#Limits
 	min_level_db = -100,
 	ref_level_db = 20,
-	fmin = 55, #Set this to 55 if your speaker is male! if female, 95 should help taking off noise. (To test depending on dataset. Pitch info: male~[65, 260], female~[100, 525])
+	fmin = 100, #Set this to 55 if your speaker is male! if female, 95 should help taking off noise. (To test depending on dataset. Pitch info: male~[65, 260], female~[100, 525])
 	fmax = 7600, #To be increased/reduced depending on data.
 
 	#Griffin Lim
@@ -191,7 +191,7 @@ hparams = tf.contrib.training.HParams(
 	upsample_conditional_features = True, #Whether to repeat conditional features or upsample them (The latter is recommended)
 	upsample_type = '1D', #Type of the upsampling deconvolution. Can be ('1D' or '2D'). 1D spans all frequency bands for each frame while 2D spans "freq_axis_kernel_size" bands at a time
 	upsample_activation = 'LeakyRelu', #Activation function used during upsampling. Can be ('LeakyRelu', 'Relu' or None)
-	upsample_scales = [5, 5, 11], #prod(upsample_scales) should be equal to hop_size
+	upsample_scales = [5, 5, 8], #prod(upsample_scales) should be equal to hop_size
 	freq_axis_kernel_size = 3, #Only used for 2D upsampling. This is the number of requency bands that are spanned at a time for each frame.
 	leaky_alpha = 0.4, #slope of the negative portion of LeakyRelu (LeakyRelu: y=x if x>0 else y=alpha * x)
 
@@ -217,7 +217,7 @@ hparams = tf.contrib.training.HParams(
 	tacotron_swap_with_cpu = False, #Whether to use cpu as support to gpu for decoder computation (Not recommended: may cause major slowdowns! Only use when critical!)
 
 	#train/test split ratios, mini-batches sizes
-	tacotron_batch_size = 32, #number of training samples on each training steps
+	tacotron_batch_size = 32*2, #number of training samples on each training steps
 	#Tacotron Batch synthesis supports ~16x the training batch size (no gradients during testing). 
 	#Training Tacotron with unmasked paddings makes it aware of them, which makes synthesis times different from training. We thus recommend masking the encoder.
 	tacotron_synthesis_batch_size = 1, #DO NOT MAKE THIS BIGGER THAN 1 IF YOU DIDN'T TRAIN TACOTRON WITH "mask_encoder=True"!!
@@ -301,32 +301,117 @@ hparams = tf.contrib.training.HParams(
 	###########################################################################################################################################
 
 	#Eval sentences (if no eval text file was specified during synthesis, these sentences are used for eval)
-	sentences = [
-	# From July 8, 2017 New York Times:
-	'Scientists at the CERN laboratory say they have discovered a new particle.',
-	'There\'s a way to measure the acute emotional intelligence that has never gone out of style.',
-	'President Trump met with other leaders at the Group of 20 conference.',
-	'The Senate\'s bill to repeal and replace the Affordable Care Act is now imperiled.',
-	# From Google's Tacotron example page:
-	'Generative adversarial network or variational auto-encoder.',
-	'Basilar membrane and otolaryngology are not auto-correlations.',
-	'He has read the whole thing.',
-	'He reads books.',
-	'He thought it was time to present the present.',
-	'Thisss isrealy awhsome.',
-	'Punctuation sensitivity, is working.',
-	'Punctuation sensitivity is working.',
-	"Peter Piper picked a peck of pickled peppers. How many pickled peppers did Peter Piper pick?",
-	"She sells sea-shells on the sea-shore. The shells she sells are sea-shells I'm sure.",
-	"Tajima Airport serves Toyooka.",
-	#From The web (random long utterance)
-	'Sequence to sequence models have enjoyed great success in a variety of tasks such as machine translation, speech recognition, and text summarization.\
-	This project covers a sequence to sequence model trained to predict a speech representation from an input sequence of characters. We show that\
-	the adopted architecture is able to perform this task with wild success.',
-	'Thank you so much for your support!',
-	]
 
-	)
+    sentences = [
+                '张睿芝',
+                '刘傲文',
+                '谭欣淇',
+                '王星',
+                '张傲然',
+                '潘梓玟',
+                '刘奕轩',
+                '温博凯',
+                '褚铮',
+                '宋宇晴',
+                '叶紫萱',
+                '谢京宸',
+                '赵梓衡',
+                '蒋秋嫣',
+                '王子叡',
+                '尚琳棋',
+                '吴雪榛',
+                '张烨',
+                '张子豪',
+                '石子涵',
+                '蒋昊成',
+                '潘一苇',
+                '王子睿',
+                '苏景宜',
+                '陈瑞霄',
+                '陈文栋',
+                '史昀昊',
+                '雷易天',
+                '陈嘉睿',
+                '刘牧涵',
+                '王国全',
+                '袁青杨',
+                '赵梓煕',
+                '陈逸耕',
+                '谷正广',
+                '王岳天',
+                '郭启迪',
+                '王紫涵',
+                '王梓赫',
+                '张子涵',
+                '王铭泽',
+                '赵子杭',
+                '张涵宇',
+                '晏梓榕',
+                '马言泽',
+                '李思柔',
+                '倪培智',
+                '刘丞尊',
+                '李豫',
+                '徐文跟我们分享一下你的答案吧',
+                '赵恩泽赵恩泽恭喜你们',
+                '谢富嘉你来说一下怎么样？',
+                '崔皓硕你来回答一下吧',
+                '张钰你来说一下吧',
+                '尚彦彬老师想听一下你的答案',
+                '何思颐跟我们分享一下你的答案吧',
+                '我们要着重表扬一下王策',
+                '我们要特别表扬一下张译丹',
+                '好有请李垣锐',
+                '徐文你来说一下怎么样？',
+                '赵恩泽',
+                '谢富嘉',
+                '崔皓硕',
+                '张钰泽',
+                '尚彦彬',
+                '何思颐',
+                '王策',
+                '张译丹',
+                '李垣锐',
+                '王嘉苗',
+                '杨梓乐',
+                '吴锦航',
+                '刘铭杨',
+                '李阅菡',
+                '赵韵卓尔',
+                '路智杰',
+                '陈高逸',
+                '谢富瑞',
+                '张浥宁',
+                '谢清扬',
+                '华宇',
+                '沈敬亭',
+                '郑翔中',
+                '马浩轩',
+                '曹琪',
+                '赵司璇',
+                '李泽瑄',
+                '蔡天妙',
+                '戴莫垚',
+                '刘曦子',
+                '李柏飞',
+                '陆研岐',
+                '史铠榕',
+                '沈家煜',
+                '汪宁喆',
+                '韩卓辰',
+                '贾欣翔',
+                '王兆琨',
+                '赵庄言',
+                '李佳桐',
+                '乔奕宁',
+                '用科技推动教育进步是我们的理念',
+                '男生每人栽三棵树女生每人栽两棵树',
+                '总共栽树一百二十棵那么一共有几名男生几名女生？',
+                '上节课我们讲到百分数。',
+                '这个答案到底对不对呢?',
+
+                ]
+        )
 
 def hparams_debug_string():
 	values = hparams.values()
