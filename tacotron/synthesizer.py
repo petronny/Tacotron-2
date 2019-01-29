@@ -11,7 +11,7 @@ from infolog import log
 from librosa import effects
 from tacotron.models import create_model
 from tacotron.utils import plot
-from tacotron.utils.text import text_to_sequence
+from tacotron.utils_Chinese.text import text_to_sequence
 
 
 class Synthesizer:

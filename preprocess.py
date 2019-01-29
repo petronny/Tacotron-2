@@ -20,7 +20,7 @@ def preprocess(args, input_folders, out_dir, hparams):
 def write_metadata(metadata, out_dir):
 	with open(os.path.join(out_dir, 'train.txt'), 'w', encoding='utf-8') as f:
 		for m in metadata:
-			f.write('|'.join([str(x) for x in m]) + '\n')
+			f.write('%'.join([str(x) for x in m]) + '\n')
 	mel_frames = sum([int(m[4]) for m in metadata])
 	timesteps = sum([int(m[3]) for m in metadata])
 	sr = hparams.sample_rate
@@ -36,12 +36,15 @@ def norm_data(args):
 	merge_books = (args.merge_books=='True')
 
 	print('Selecting data folders..')
-	supported_datasets = ['LJSpeech-1.0', 'LJSpeech-1.1', 'M-AILABS']
+	supported_datasets = ['LJSpeech-1.0', 'LJSpeech-1.1', 'M-AILABS','Baker']
 	if args.dataset not in supported_datasets:
 		raise ValueError('dataset value entered {} does not belong to supported datasets: {}'.format(
 			args.dataset, supported_datasets))
 
 	if args.dataset.startswith('LJSpeech'):
+		return [os.path.join(args.base_dir, args.dataset)]
+
+	if args.dataset == 'Baker':
 		return [os.path.join(args.base_dir, args.dataset)]
 
 
@@ -89,7 +92,7 @@ def main():
 	parser.add_argument('--base_dir', default='')
 	parser.add_argument('--hparams', default='',
 		help='Hyperparameter overrides as a comma-separated list of name=value pairs')
-	parser.add_argument('--dataset', default='LJSpeech-1.1')
+	parser.add_argument('--dataset', default='Baker')
 	parser.add_argument('--language', default='en_US')
 	parser.add_argument('--voice', default='female')
 	parser.add_argument('--reader', default='mary_ann')

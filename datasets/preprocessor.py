@@ -5,7 +5,7 @@ from functools import partial
 import numpy as np
 from datasets import audio
 from wavenet_vocoder.util import is_mulaw, is_mulaw_quantize, mulaw, mulaw_quantize
-
+import csv
 
 def build_from_path(hparams, input_dirs, mel_dir, linear_dir, wav_dir, n_jobs=12, tqdm=lambda x: x):
 	"""
@@ -30,9 +30,11 @@ def build_from_path(hparams, input_dirs, mel_dir, linear_dir, wav_dir, n_jobs=12
 	futures = []
 	index = 1
 	for input_dir in input_dirs:
-		with open(os.path.join(input_dir, 'metadata.csv'), encoding='utf-8') as f:
-			for line in f:
-				parts = line.strip().split('|')
+		with open(os.path.join(input_dir, 'metadata.csv')) as f:
+			reader = csv.reader(f)
+			for line in reader:
+				parts = line #.strip().split(',')
+				#print(parts[1])
 				basename = parts[0]
 				wav_path = os.path.join(input_dir, 'wavs', '{}.wav'.format(basename))
 				text = parts[2]

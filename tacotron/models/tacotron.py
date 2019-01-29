@@ -1,5 +1,5 @@
 import tensorflow as tf 
-from tacotron.utils.symbols import symbols
+from tacotron.utils_Chinese.symbols import symbols
 from infolog import log
 from tacotron.models.helpers import TacoTrainingHelper, TacoTestHelper
 from tacotron.models.modules import *
